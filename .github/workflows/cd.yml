@@ -1,0 +1,28 @@
+name: CD build
+
+on:
+  push:
+    branches:
+      - ejercicio-2
+
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Configure ssh key
+        run: |
+          mkdir -p "~/.ssh/"
+          echo "${{secrets.SSH_PRIVATE_BUILD}}" > ~/.ssh/id_rsa
+          sudo chmod 600 ~/.ssh/id_rsa
+      - name: Configure git user
+        run: |
+          git config --global user.name "build-user" 
+          git config --global user.email "build-user@dac.com"
+      - name: Install dependencies
+        run: npm i
+      - name: Build
+        run: npm run build:prod
+      - name: Deploy
+        run: npm run deploy-page -- -r git@github.com:DanielAcedo/lemoncode-cloud-basic.git
